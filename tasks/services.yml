@@ -23,13 +23,20 @@
   win_find:
     paths: "{{ consul_configd_path }}"
     file_type: file
-  register: services_enabled
+  register: services_enabled_windows
   when: ansible_os_family == 'Windows'
 
 - name: Set fact with list of existing configuration file
   set_fact:
-    list_current_service_config: "{{ list_current_service_config |default([]) + [ item.filename ] }}"
+    list_current_service_config: "{{ list_current_service_config |default([]) + [ item.path ] }}"
   with_items: "{{ services_enabled['files'] }}"
+  when: ansible_os_family != 'Windows'
+
+- name: Set fact with list of existing configuration file [Windows]
+  set_fact:
+    list_current_service_config: "{{ list_current_service_config |default([]) + [ item.path ] }}"
+  with_items: "{{ services_enabled_windows['files'] }}"
+  when: ansible_os_family == 'Windows'
 
 - name: Set fact with list of service we manage
   set_fact:
